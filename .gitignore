@@ -1,0 +1,36 @@
+# Prerequisites
+*.d
+<<<<<<< HEAD
+
+=======
+>>>>>>> BigBrainBranch
+g4gBuild
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+
+# Executables
+*.out
+*.app
+
+imgui.ini
+imgui.ini
