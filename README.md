@@ -1,5 +1,7 @@
 # CG4Games
 
+Original repository: https://github.com/eameres/G4G_Basic
+
 New and Improved Sandbox!
 
 Now by default implements advanced features and includes saving and loading of shaders and model Matrix
