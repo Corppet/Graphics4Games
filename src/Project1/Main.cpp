@@ -29,13 +29,29 @@
 
 #include "filesystem.h"
 
-//#define sandbox 
+#define sandbox 
 //#define foo
 //#define myTriangle
 //#define triangleClass
-#define myCube
+//#define myCube
 
-#define SRC_PATH "C:/Users/Corppet/source/repos/G4G_Build/src/Project1/"
+#define SRC_PATH "C:/Users/HOI3/source/repos/G4G_Basic/"
+
+using namespace std;
+
+extern unsigned char imageBuff[512][512][3];
+
+void defaultPixels();
+void drawPixel(float x, float y, vector<unsigned char> color);
+void drawPoints(vector<vector<float>> points, int numPoints, vector<unsigned char> color);
+void drawLine(vector<float> point1, vector<float> point2, vector<unsigned char> color);
+void drawTriangle(vector<float> point1, vector<float> point2, vector<float> point3, 
+    vector<unsigned char> color);
+void drawRectangle(vector<float> point1, vector<float> point2, vector<float> point3, vector<float> point4, 
+    vector<unsigned char> color);
+void drawCircle(vector<float> center, float radius, vector<unsigned char> color);
+void drawBezier(vector<float> point1, vector<float> point2, vector<float> point3, vector<float> point4,
+    int numSegments, vector<unsigned char> color);
 
 #ifdef sandbox
 
@@ -48,11 +64,8 @@ const unsigned int SCR_HEIGHT = 720;
 unsigned int texture;
 
 // image buffer used by raster drawing basics.cpp
-extern unsigned char imageBuff[512][512][3];
-extern unsigned int liveBuff[512][512][3];
-extern bool isLive[512][512];
-
-using namespace std;
+//extern unsigned int liveBuff[512][512][3];
+//extern bool isLive[512][512];
 
 int myTexture();
 int setupLife();
@@ -176,12 +189,15 @@ int main()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
 
-    setupLife();
-    setLive(-1, 0);
-    setLive(0, 0);
-	setLive(1, 0);
-    myTexture();
+ //   setupLife();
+ //   setLive(-1, 0);
+ //   setLive(0, 0);
+	//setLive(1, 0);
+ //   myTexture();
     //RayTracer();
+
+    defaultPixels();
+    drawBezier({ 0.0f, 0.0f }, { 0.25f, 0.25f }, { 0.5f, 0.5f }, { 1.0f, 1.0f }, 10, { 255, 255, 255 });
 
     setupTextures();
 
@@ -764,6 +780,8 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
+    namespace fs = std::filesystem;
+	
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -801,7 +819,7 @@ int main()
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader ourShader((SRC_PATH + (std::string)"coordinate_systems.vert").c_str(), (SRC_PATH + (std::string)"coordinate_systems.frag").c_str());
+    Shader ourShader((SRC_PATH + (std::string)"src/Project1/coordinate_systems.vert").c_str(), (SRC_PATH + (std::string)"src/Project1/coordinate_systems.frag").c_str());
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -894,7 +912,7 @@ int main()
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char* data = stbi_load(((std::string)"C:/Users/Corppet/source/repos/G4G_Build/tools/hoi3@rpi.edu.png").c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load((SRC_PATH + (std::string)"tools/hoi3@rpi.edu.png").c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
