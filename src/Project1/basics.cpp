@@ -45,7 +45,7 @@ void defaultPixels()
 /// <param name="color">
 /// { RED, GREEN, BLUE } color values.
 /// </param>
-void drawPixel(float x, float y, vector<unsigned char> color)
+void drawPixel(float x, float y, unsigned char color[3])
 {
 	int ix = (int)(x * dimx);
 	int iy = (int)((1.0f - y) * dimy);
@@ -58,7 +58,7 @@ void drawPixel(float x, float y, vector<unsigned char> color)
 	imageBuff[ix][iy][BLUE] = color[BLUE];
 }
 
-void drawPoints(vector<vector<float>> points, int numPoints, vector<unsigned char> color)
+void drawPoints(float points[][2], int numPoints, unsigned char color[3])
 {
 	for (int i = 0; i < numPoints; i++)
 		drawPixel(points[i][0], points[i][1], color);
@@ -76,7 +76,7 @@ void drawPoints(vector<vector<float>> points, int numPoints, vector<unsigned cha
 /// <param name="color">
 /// { RED, GREEN, BLUE } color values.
 /// </param>
-void drawLine(vector<float> point1, vector<float> point2, vector<unsigned char> color)
+void drawLine(float point1[2], float point2[2], unsigned char color[3])
 {
 	float x1 = point1[0];
 	float y1 = point1[1];
@@ -115,7 +115,7 @@ void drawLine(vector<float> point1, vector<float> point2, vector<unsigned char> 
 /// <param name="color">
 /// { RED, GREEN, BLUE } color values.
 /// </param>
-void drawTriangle(vector<float> point1, vector<float> point2, vector<float> point3, vector<unsigned char> color)
+void drawTriangle(float point1[2], float point2[2], float point3[2], unsigned char color[3])
 {
 	drawLine(point1, point2, color);
 	drawLine(point2, point3, color);
@@ -140,8 +140,8 @@ void drawTriangle(vector<float> point1, vector<float> point2, vector<float> poin
 /// <param name="color">
 /// { RED, GREEN, BLUE } color values.
 /// </param>
-void drawRectangle(vector<float> point1, vector<float> point2, vector<float> point3, vector<float> point4, 
-	vector<unsigned char> color)
+void drawRectangle(float point1[2], float point2[2], float point3[2], float point4[2], 
+	unsigned char color[3])
 {
 	drawLine(point1, point2, color);
 	drawLine(point2, point3, color);
@@ -161,7 +161,7 @@ void drawRectangle(vector<float> point1, vector<float> point2, vector<float> poi
 /// <param name="color">
 /// { RED, GREEN, BLUE } color values.
 /// </param>
-void drawCircle(vector<float> center, float radius, vector<unsigned char> color)
+void drawCircle(vector<float> center, float radius, unsigned char color[3])
 {
 	float x = 0.0f;
 	float y = radius;
@@ -213,8 +213,8 @@ void drawCircle(vector<float> center, float radius, vector<unsigned char> color)
 /// <param name="color">
 /// { RED, GREEN, BLUE } color values.
 /// </param>
-void drawBezier(vector<float> point1, vector<float> point2, vector<float> point3, vector<float> point4, 
-	int numSegments, vector<unsigned char> color)
+void drawBezier(float point1[2], float point2[2], float point3[2], float point4[2], 
+	int numSegments, unsigned char color[3])
 {
 	float t = 0.0f;
 	float step = 1.0f / numSegments;
@@ -253,11 +253,6 @@ void drawBezier(vector<float> point1, vector<float> point2, vector<float> point3
 		if (t > 1.0f)
 			t = 1.0f;
 	}
-	
-	//drawPixel(x1, y1, color);
-	//drawPixel(x2, y2, color);
-	//drawPixel(x3, y3, color);
-	//drawPixel(x4, y4, color);
 }
 
 int putPixel(int x, int y, int r, int g, int b)

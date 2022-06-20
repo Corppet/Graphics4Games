@@ -41,18 +41,6 @@ using namespace std;
 
 extern unsigned char imageBuff[512][512][3];
 
-void defaultPixels();
-void drawPixel(float x, float y, vector<unsigned char> color);
-void drawPoints(vector<vector<float>> points, int numPoints, vector<unsigned char> color);
-void drawLine(vector<float> point1, vector<float> point2, vector<unsigned char> color);
-void drawTriangle(vector<float> point1, vector<float> point2, vector<float> point3, 
-    vector<unsigned char> color);
-void drawRectangle(vector<float> point1, vector<float> point2, vector<float> point3, vector<float> point4, 
-    vector<unsigned char> color);
-void drawCircle(vector<float> center, float radius, vector<unsigned char> color);
-void drawBezier(vector<float> point1, vector<float> point2, vector<float> point3, vector<float> point4,
-    int numSegments, vector<unsigned char> color);
-
 #ifdef sandbox
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -189,15 +177,12 @@ int main()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
 
- //   setupLife();
- //   setLive(-1, 0);
- //   setLive(0, 0);
-	//setLive(1, 0);
- //   myTexture();
+    setupLife();
+    setLive(-1, 0);
+    setLive(0, 0);
+	setLive(1, 0);
+    myTexture();
     //RayTracer();
-
-    defaultPixels();
-    drawBezier({ 0.0f, 0.0f }, { 0.25f, 0.25f }, { 0.5f, 0.5f }, { 1.0f, 1.0f }, 10, { 255, 255, 255 });
 
     setupTextures();
 
