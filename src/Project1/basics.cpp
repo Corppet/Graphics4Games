@@ -15,7 +15,7 @@ using namespace std;
 constexpr auto dimx = 512u, dimy = 512u;
 
 unsigned char imageBuff[dimx][dimy][3];
-unsigned int liveBuff[dimx][dimy][3];
+int liveBuff[dimx][dimy][3];
 bool isLive[dimx][dimy];
 
 #define RED 0
@@ -53,9 +53,9 @@ void drawPixel(float x, float y, unsigned char color[3])
 	if (ix < 0 || ix >= dimx || iy < 0 || iy >= dimy)
 		return;
 	
-	imageBuff[ix][iy][RED] = color[RED];
-	imageBuff[ix][iy][GREEN] = color[GREEN];
-	imageBuff[ix][iy][BLUE] = color[BLUE];
+	imageBuff[iy][ix][RED] = color[RED];
+	imageBuff[iy][ix][GREEN] = color[GREEN];
+	imageBuff[iy][ix][BLUE] = color[BLUE];
 }
 
 void drawPoints(float points[][2], int numPoints, unsigned char color[3])
@@ -84,19 +84,48 @@ void drawLine(float point1[2], float point2[2], unsigned char color[3])
 	float x2 = point2[0];
 	float y2 = point2[1];
 
-	float dx = x2 - x1;
-	float dy = y2 - y1;
+	float dx = abs(x2 - x1);
+	float dy = abs(y2 - y1);
 	
-	float slope = dy / dx;
+	float px = dx * 2;
+	float py = dy * 2;
 	
 	float x = x1;
 	float y = y1;
 	
-	while (x <= x2)
+	float xInc = x2 > x1 ? 1.0f / dimx : -1.0f / dimx;
+	float yInc = y2 > y1 ? 1.0f / dimy : -1.0f / dimy;
+
+	// draw the last pixel ahead of time
+	drawPixel(x2, y2, color);
+	
+	if (dx > dy)
 	{
-		drawPixel(x, y, color);
-		x += 1.0f;
-		y += slope;
+		float accum = -dx;
+		for (x = x1; x < x2; x += xInc)
+		{
+			drawPixel(x, y, color);
+			accum += py;
+			if (accum > 0.0f)
+			{
+				y += yInc;
+				accum -= px;
+			}
+		}
+	}
+	else
+	{
+		float accum = -dy;
+		for (y = y1; y < y2; y += yInc)
+		{
+			drawPixel(x, y, color);
+			accum += px;
+			if (accum > 0.0f)
+			{
+				x += xInc;
+				accum -= py;
+			}
+		}
 	}
 }
 
@@ -161,13 +190,13 @@ void drawRectangle(float point1[2], float point2[2], float point3[2], float poin
 /// <param name="color">
 /// { RED, GREEN, BLUE } color values.
 /// </param>
-void drawCircle(vector<float> center, float radius, unsigned char color[3])
+void drawCircle(float center[2], float radius, unsigned char color[3])
 {
 	float x = 0.0f;
 	float y = radius;
-	
-	float d = 1.0f - radius;
-	
+
+	float p = 1.0f - radius;
+
 	while (y >= 0.0f)
 	{
 		drawPixel(center[0] + x, center[1] + y, color);
@@ -179,15 +208,15 @@ void drawCircle(vector<float> center, float radius, unsigned char color[3])
 		drawPixel(center[0] - y, center[1] + x, color);
 		drawPixel(center[0] - y, center[1] - x, color);
 
-		if (d < 0.0f)
-			d += 2.0f * x + 3.0f;
+		if (p < 0.0f)
+			p += 2.0f * x + 3.0f;
 		else
 		{
-			d += 2.0f * (x - y) + 5.0f;
-			y -= 1.0f;
+			p += 2.0f * (x - y) + 5.0f;
+			y -= 1.0f / dimy;
 		}
-		
-		x += 1.0f;
+
+		x += 1.0f / dimx;
 	}
 }
 
@@ -246,12 +275,9 @@ void drawBezier(float point1[2], float point2[2], float point3[2], float point4[
 			3.0f * powf(t, 2.0f) * (1.0f - t) * y3 +
 			powf(t, 3.0f) * y4;
 
-		drawPixel(x, y, color);
+		drawPixel(x / dimx, y / dimy, color);
 
 		t += step;
-		
-		if (t > 1.0f)
-			t = 1.0f;
 	}
 }
 
@@ -334,7 +360,6 @@ int myTexture()
 {
 	memset(imageBuff, 0, sizeof(imageBuff));
 
-	/*
 	for (int i = 0; i < dimx; i++)
 		for (int j = 0; j < dimy; j++)
 		{
@@ -357,9 +382,9 @@ int myTexture()
 				}
 			}
 		}
-	*/
 
 	// write checkerboard
+	/*
 	for (int i = 0; i < dimx; i++)
 		for (int j = 0; j < dimy; j++)
 		{
@@ -379,6 +404,7 @@ int myTexture()
 					putPixel(i, j, 0, 0, 0);
 			}
 		}
+		*/
 
 	return 0;
 }
