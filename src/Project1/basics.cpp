@@ -363,13 +363,75 @@ void drawBezier(float point1[2], float point2[2], float point3[2], float point4[
 	}
 }
 
+bool sameColor(unsigned char color1[3], unsigned char color2[3])
+{
+	return (color1[RED] == color2[RED] && color1[GREEN] == color2[GREEN] 
+		&& color1[BLUE] == color2[BLUE]);
+}
+
+void fillHelper(int x, int y, unsigned char color[3], unsigned char prev_color[3])
+{
+	if (x < 0 || x >= dimx || y < 0 || y >= dimy)
+		return;
+
+	if (x - 1 >= 0 && sameColor(prev_color, imageBuff[y][x - 1]))
+	{
+		drawPixelRaw(x - 1, y, color);
+		fillHelper(x - 1, y, color, prev_color);
+	}
+	if (x + 1 < dimx && sameColor(prev_color, imageBuff[y][x + 1]))
+	{
+		drawPixelRaw(x + 1, y, color);
+		fillHelper(x + 1, y, color, prev_color);
+	}
+	if (y - 1 >= 0 && sameColor(prev_color, imageBuff[y - 1][x]))
+	{
+		drawPixelRaw(x, y - 1, color);
+		fillHelper(x, y - 1, color, prev_color);
+	}
+	if (y + 1 < dimy && sameColor(prev_color, imageBuff[y + 1][x]))
+	{
+		drawPixelRaw(x, y + 1, color);
+		fillHelper(x, y + 1, color, prev_color);
+	}
+}
+
+/// <summary>
+/// Change the color of a pixel and any pixels around it of the same color.
+/// </summary>
+/// <param name="point">
+/// = starting point of the pixel to change color.
+/// </param>
+/// <param name="color">
+/// = { RED, GREEN, BLUE } color values.
+/// </param>
+void fill(float point[2], unsigned char color[3])
+{
+	if (point[0] < 0.0f || point[0] >= 1.0f || point[1] < 0.0f || point[1] >= 1.0f)
+		return;
+
+	int x = (int)(point[0] * dimx + 0.5f);
+	int y = (int)((1.0f - point[1]) * dimy + 0.5f);
+	
+	unsigned char prev_color[] = { 
+		imageBuff[y][x][RED], 
+		imageBuff[y][x][GREEN], 
+		imageBuff[y][x][BLUE] 
+	};
+
+	drawPixelRaw(x, y, color);
+	fillHelper(x, y, color, prev_color);
+}
+
 int putPixel(int x, int y, int r, int g, int b)
 {
 	if (x < 0 || x >= dimx || y < 0 || y >= dimy)
 		return -1;
+	
 	liveBuff[x][y][RED] = r;
 	liveBuff[x][y][GREEN] = g;
 	liveBuff[x][y][BLUE] = b;
+	
 	return 0;
 }
 
