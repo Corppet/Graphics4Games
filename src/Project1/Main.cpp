@@ -40,8 +40,6 @@
 
 using namespace std;
 
-extern unsigned char imageBuff[512][512][3];
-
 #ifdef sandbox
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -53,6 +51,7 @@ const unsigned int SCR_HEIGHT = 720;
 unsigned int texture;
 
 // image buffer used by raster drawing basics.cpp
+extern unsigned char imageBuff[512][512][3];
 //extern unsigned int liveBuff[512][512][3];
 //extern bool isLive[512][512];
 
@@ -231,24 +230,25 @@ const unsigned int SCR_HEIGHT = 720;
 float eye1[] = { 0.25f, 0.66f };
 float eye2[] = { 0.75f, 0.66f };
 
-float nose1[] = { .5,.5 };
-float nose2[] = { .45,.45 };
-float nose3[] = { .55,.45 };
+float nose1[] = { 0.5f, 0.5f };
+float nose2[] = { 0.45f, 0.45f };
+float nose3[] = { 0.55f, 0.45f };
 
-float mouth1[] = { .25, .5 };
-float mouth2[] = { .44, .33 };
-float mouth3[] = { .66, .33 };
-float mouth4[] = { .75, .5 };
+float mouth1[] = { 0.25f, 0.5f };
+float mouth2[] = { 0.44f, 0.33f };
+float mouth3[] = { 0.66f, 0.33f };
+float mouth4[] = { 0.75f, 0.5f };
 
 
-float mouth2a[] = { .44, .2 };
-float mouth3a[] = { .66, .2 };
+float mouth2a[] = { 0.44f, 0.2f };
+float mouth3a[] = { 0.66f, 0.2f };
 
 unsigned char myColor[] = { 123, 231, 255 };
 
 unsigned int texture;
 
 // image buffer used by raster drawing basics.cpp
+extern unsigned char imageBuff[512][512][3];
 //extern unsigned int liveBuff[512][512][3];
 //extern bool isLive[512][512];
 
@@ -270,7 +270,7 @@ void drawBezier(float point1[2], float point2[2], float point3[2], float point4[
 void setupTextures()
 {
     // create textures 
-        // -------------------------
+    // -------------------------
     glGenTextures(1, &texture);
 
     // texture is a buffer we will be generating for pixel experiments
@@ -393,8 +393,8 @@ int main()
 
     drawTriangle(nose1, nose2, nose3, myColor);
 
-    //drawBezier(mouth1, mouth2, mouth3, mouth4, 16, myColor);
-    //drawBezier(mouth1, mouth2a, mouth3a, mouth4, 16, myColor);
+    drawBezier(mouth1, mouth2, mouth3, mouth4, 16, myColor);
+    drawBezier(mouth1, mouth2a, mouth3a, mouth4, 16, myColor);
 
     setupTextures();
 

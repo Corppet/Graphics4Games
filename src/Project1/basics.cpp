@@ -34,16 +34,16 @@ void defaultPixels()
 }
 
 /// <summary>
-/// Set the color of a pixel.
+/// Set the color of a pixel with 0-1 coordinates.
 /// </summary>
 /// <param name="x">
-/// [0, 1] x-coordinate of the pixel.
+/// = [0, 1] x-coordinate of the pixel.
 /// </param>
 /// <param name="y">
-/// [0, 1] y-coordinate of the pixel.
+/// = [0, 1] y-coordinate of the pixel.
 /// </param>
 /// <param name="color">
-/// { RED, GREEN, BLUE } color values.
+/// = { RED, GREEN, BLUE } color values.
 /// </param>
 void drawPixel(float x, float y, unsigned char color[3])
 {
@@ -58,6 +58,36 @@ void drawPixel(float x, float y, unsigned char color[3])
 	imageBuff[iy][ix][BLUE] = color[BLUE];
 }
 
+/// <summary>
+/// Set the color of a pixel with exact coordinates.
+/// </summary>
+/// <param name="x">
+/// = [0, dimx] x-coordinate of the pixel.
+/// </param>
+/// <param name="y">
+/// = [0, dimy] y-coordinate of the pixel.
+/// </param>
+/// <param name="color">
+/// = { RED, GREEN, BLUE } color values.
+/// </param>
+void drawPixelRaw(int x, int y, unsigned char color[3])
+{
+	if (x < 0 || x >= dimx || y < 0 || y >= dimy)
+		return;
+
+	y = dimy - y;
+	
+	imageBuff[y][x][RED] = color[RED];
+	imageBuff[y][x][GREEN] = color[GREEN];
+	imageBuff[y][x][BLUE] = color[BLUE];
+}
+
+/// <summary>
+/// Set the color of a collection of pixels.
+/// </summary>
+/// <param name="points"></param>
+/// <param name="numPoints"></param>
+/// <param name="color"></param>
 void drawPoints(float points[][2], int numPoints, unsigned char color[3])
 {
 	for (int i = 0; i < numPoints; i++)
@@ -87,8 +117,8 @@ void drawLine(float point1[2], float point2[2], unsigned char color[3])
 	float dx = abs(x2 - x1);
 	float dy = abs(y2 - y1);
 	
-	float px = dx * 2;
-	float py = dy * 2;
+	float px = dx * 2.0f;
+	float py = dy * 2.0f;
 	
 	float x = x1;
 	float y = y1;
@@ -99,31 +129,65 @@ void drawLine(float point1[2], float point2[2], unsigned char color[3])
 	// draw the last pixel ahead of time
 	drawPixel(x2, y2, color);
 	
+	// if run > rise
 	if (dx > dy)
 	{
 		float accum = -dx;
-		for (x = x1; x < x2; x += xInc)
+		if (xInc > 0)
 		{
-			drawPixel(x, y, color);
-			accum += py;
-			if (accum > 0.0f)
+			for (; x < x2; x += xInc)
 			{
-				y += yInc;
-				accum -= px;
+				drawPixel(x, y, color);
+				accum += py;
+				if (accum > 0.0f)
+				{
+					y += yInc;
+					accum -= px;
+				}
+			}
+		}
+		else
+		{
+			for (; x > x2; x += xInc)
+			{
+				drawPixel(x, y, color);
+				accum += py;
+				if (accum > 0.0f)
+				{
+					y += yInc;
+					accum -= px;
+				}
 			}
 		}
 	}
+	// if rise >= run
 	else
 	{
 		float accum = -dy;
-		for (y = y1; y < y2; y += yInc)
+		if (yInc > 0)
 		{
-			drawPixel(x, y, color);
-			accum += px;
-			if (accum > 0.0f)
+			for (; y < y2; y += yInc)
 			{
-				x += xInc;
-				accum -= py;
+				drawPixel(x, y, color);
+				accum += px;
+				if (accum > 0.0f)
+				{
+					x += xInc;
+					accum -= py;
+				}
+			}
+		}
+		else
+		{
+			for (; y > y2; y += yInc)
+			{
+				drawPixel(x, y, color);
+				accum += px;
+				if (accum > 0.0f)
+				{
+					x += xInc;
+					accum -= py;
+				}
 			}
 		}
 	}
@@ -192,32 +256,42 @@ void drawRectangle(float point1[2], float point2[2], float point3[2], float poin
 /// </param>
 void drawCircle(float center[2], float radius, unsigned char color[3])
 {
-	float x = 0.0f;
-	float y = radius;
+	int xc = (int)(center[0] * dimx + 0.5f);
+	int yc = (int)(center[1] * dimy + 0.5f);
+	int r = (int)(radius * min(dimx, dimy) + 0.5f);
+	
+	int x = 0;
+	int y = r;
 
-	float p = 1.0f - radius;
+	int p = 3 - 2 * r;
 
-	while (y >= 0.0f)
+	while (x <= y)
 	{
-		drawPixel(center[0] + x, center[1] + y, color);
-		drawPixel(center[0] + x, center[1] - y, color);
-		drawPixel(center[0] - x, center[1] + y, color);
-		drawPixel(center[0] - x, center[1] - y, color);
-		drawPixel(center[0] + y, center[1] + x, color);
-		drawPixel(center[0] + y, center[1] - x, color);
-		drawPixel(center[0] - y, center[1] + x, color);
-		drawPixel(center[0] - y, center[1] - x, color);
-
-		if (p < 0.0f)
-			p += 2.0f * x + 3.0f;
-		else
+		drawPixelRaw(xc + x, yc + y, color);
+		drawPixelRaw(xc - x, yc + y, color);
+		drawPixelRaw(xc + x, yc - y, color);
+		drawPixelRaw(xc - x, yc - y, color);
+		drawPixelRaw(xc + y, yc + x, color);
+		drawPixelRaw(xc - y, yc + x, color);
+		drawPixelRaw(xc + y, yc - x, color);
+		drawPixelRaw(xc - y, yc - x, color);
+		
+		if (p > 0)
 		{
-			p += 2.0f * (x - y) + 5.0f;
-			y -= 1.0f / dimy;
+			y--;
+			p += -2 * y + 2;
 		}
 
-		x += 1.0f / dimx;
+		x++;
+		p += 2 * x + 3;
 	}
+}
+
+int getPt(int p1, int p2, float perc)
+{
+	int diff = p2 - p1;
+
+	return p1 + (diff * perc);
 }
 
 /// <summary>
@@ -245,39 +319,47 @@ void drawCircle(float center[2], float radius, unsigned char color[3])
 void drawBezier(float point1[2], float point2[2], float point3[2], float point4[2], 
 	int numSegments, unsigned char color[3])
 {
-	float t = 0.0f;
 	float step = 1.0f / numSegments;
-
-	float x1 = point1[0];
-	float y1 = point1[1];
 	
-	float x2 = point2[0];
-	float y2 = point2[1];
+	int x1 = (int)(point1[0] * dimx + 0.5f);
+	int y1 = (int)(point1[1] * dimy + 0.5f);
+
+	int x2 = (int)(point2[0] * dimx + 0.5f);
+	int y2 = (int)(point2[1] * dimy + 0.5f);
+
+	int x3 = (int)(point3[0] * dimx + 0.5f);
+	int y3 = (int)(point3[1] * dimy + 0.5f);
+
+	int x4 = (int)(point4[0] * dimx + 0.5f);
+	int y4 = (int)(point4[1] * dimy + 0.5f);
 	
-	float x3 = point3[0];
-	float y3 = point3[1];
-
-	float x4 = point4[0];
-	float y4 = point4[1];
-
-	float x = 0.0f;
-	float y = 0.0f;
-
-	while (t <= 1.0f)
+	float prev[2] = { point1[0], point1[1] };
+	
+	for (float i = 0; i <= 1; i += step)
 	{
-		x = powf(1.0f - t, 3) * x1 +
-			3.0f * t * powf(1.0f - t, 2) * x2 +
-			3.0f * powf(t, 2.0f) * (1.0f - t) * x3 +
-			powf(t, 3.0f) * x4;
+		// The Green Lines
+		int xa = getPt(x1, x2, i);
+		int ya = getPt(y1, y2, i);
+		int xb = getPt(x2, x3, i);
+		int yb = getPt(y2, y3, i);
+		int xc = getPt(x3, x4, i);
+		int yc = getPt(y3, y4, i);
 
-		y = powf(1.0f - t, 3.0f) * y1 +
-			3.0f * t * powf(1.0f - t, 2.0f) * y2 +
-			3.0f * powf(t, 2.0f) * (1.0f - t) * y3 +
-			powf(t, 3.0f) * y4;
+		// The Blue Line
+		int xm = getPt(xa, xb, i);
+		int ym = getPt(ya, yb, i);
+		int xn = getPt(xb, xc, i);
+		int yn = getPt(yb, yc, i);
 
-		drawPixel(x / dimx, y / dimy, color);
+		// The Black Dot
+		float x = getPt(xm, xn, i);
+		float y = getPt(ym, yn, i);
+		float p[2] = { x / dimx, y / dimy };
 
-		t += step;
+		drawLine(prev, p, color);
+
+		prev[0] = p[0];
+		prev[1] = p[1];
 	}
 }
 
