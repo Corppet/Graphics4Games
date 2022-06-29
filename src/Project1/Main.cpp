@@ -230,6 +230,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
+float middle[] = { 0.51f, 0.51f };
+
 float eye1[] = { 0.25f, 0.66f };
 float eye2[] = { 0.75f, 0.66f };
 
@@ -269,6 +271,7 @@ void drawRectangle(float point1[2], float point2[2], float point3[2], float poin
 void drawCircle(float center[2], float radius, unsigned char color[3]);
 void drawBezier(float point1[2], float point2[2], float point3[2], float point4[2],
     int numSegments, unsigned char color[3]);
+void fill(float point[2], unsigned char color[3]);
 
 void setupTextures()
 {
@@ -399,6 +402,8 @@ int main()
     drawBezier(mouth1, mouth2, mouth3, mouth4, 16, myColor);
     drawBezier(mouth1, mouth2a, mouth3a, mouth4, 16, myColor);
 
+    fill(middle, myColor);
+	
     setupTextures();
 
     // render loop

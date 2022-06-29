@@ -47,6 +47,12 @@ void defaultPixels()
 /// </param>
 void drawPixel(float x, float y, unsigned char color[3])
 {
+	if (x < 0 || x > 1 || y < 0 || y > 1)
+	{
+		cerr << "ERROR: Point values must be between 0 and 1." << endl;
+		return;
+	}
+	
 	int ix = (int)(x * dimx);
 	int iy = (int)((1.0f - y) * dimy);
 
@@ -73,7 +79,10 @@ void drawPixel(float x, float y, unsigned char color[3])
 void drawPixelRaw(int x, int y, unsigned char color[3])
 {
 	if (x < 0 || x >= dimx || y < 0 || y >= dimy)
+	{
+		cerr << "ERROR: Coordinates out of bounds." << endl;
 		return;
+	}
 
 	y = dimy - y;
 	
@@ -108,6 +117,13 @@ void drawPoints(float points[][2], int numPoints, unsigned char color[3])
 /// </param>
 void drawLine(float point1[2], float point2[2], unsigned char color[3])
 {
+	if (point1[0] < 0.0f || point1[0] > 1.0f || point1[1] < 0.0f || point1[1] > 1.0f ||
+		point2[0] < 0.0f || point2[0] > 1.0f || point2[1] < 0.0f || point2[1] > 1.0f)
+	{
+		cerr << "ERROR: Point values must be between 0 and 1." << endl;
+		return;
+	}
+
 	float x1 = point1[0];
 	float y1 = point1[1];
 
@@ -255,7 +271,19 @@ void drawRectangle(float point1[2], float point2[2], float point3[2], float poin
 /// { RED, GREEN, BLUE } color values.
 /// </param>
 void drawCircle(float center[2], float radius, unsigned char color[3])
-{
+{	
+	if (center[0] < 0 || center[0] >= dimx || center[1] < 0 || center[1] >= dimy)
+	{
+		cerr << "ERROR: center of circle is out of bounds." << endl;
+		return;
+	}
+
+	if (radius < 0.0f)
+	{
+		cerr << "ERROR: radius must be greater than 0." << endl;
+		return;
+	}
+
 	int xc = (int)(center[0] * dimx + 0.5f);
 	int yc = (int)(center[1] * dimy + 0.5f);
 	int r = (int)(radius * min(dimx, dimy) + 0.5f);
@@ -319,6 +347,21 @@ int getPt(int p1, int p2, float perc)
 void drawBezier(float point1[2], float point2[2], float point3[2], float point4[2], 
 	int numSegments, unsigned char color[3])
 {
+	if (point1[0] < 0.0f || point1[0] > 1.0f || point1[1] < 0.0f || point1[1] > 1.0f ||
+		point2[0] < 0.0f || point2[0] > 1.0f || point2[1] < 0.0f || point2[1] > 1.0f ||
+		point3[0] < 0.0f || point3[0] > 1.0f || point3[1] < 0.0f || point3[1] > 1.0f ||
+		point4[0] < 0.0f || point4[0] > 1.0f || point4[1] < 0.0f || point4[1] > 1.0f)
+	{
+		cerr << "ERROR: Bezier curve points must be between 0 and 1." << endl;
+		return;
+	}
+
+	if (numSegments < 1)
+	{
+		cerr << "ERROR: Bezier curve must have at least 1 segment." << endl;
+		return;
+	}
+
 	float step = 1.0f / numSegments;
 	
 	int x1 = (int)(point1[0] * dimx + 0.5f);
@@ -363,13 +406,78 @@ void drawBezier(float point1[2], float point2[2], float point3[2], float point4[
 	}
 }
 
+bool sameColor(unsigned char color1[3], unsigned char color2[3])
+{
+	return (color1[RED] == color2[RED] && color1[GREEN] == color2[GREEN] 
+		&& color1[BLUE] == color2[BLUE]);
+}
+
+void fillHelper(int x, int y, unsigned char color[3], unsigned char prev_color[3])
+{
+	if (x < 0 || x >= dimx || y < 0 || y >= dimy)
+		return;
+
+	if (x - 1 >= 0 && sameColor(prev_color, imageBuff[y][x - 1]))
+	{
+		drawPixelRaw(x - 1, y, color);
+		fillHelper(x - 1, y, color, prev_color);
+	}
+	if (x + 1 < dimx && sameColor(prev_color, imageBuff[y][x + 1]))
+	{
+		drawPixelRaw(x + 1, y, color);
+		fillHelper(x + 1, y, color, prev_color);
+	}
+	if (y - 1 >= 0 && sameColor(prev_color, imageBuff[y - 1][x]))
+	{
+		drawPixelRaw(x, y - 1, color);
+		fillHelper(x, y - 1, color, prev_color);
+	}
+	if (y + 1 < dimy && sameColor(prev_color, imageBuff[y + 1][x]))
+	{
+		drawPixelRaw(x, y + 1, color);
+		fillHelper(x, y + 1, color, prev_color);
+	}
+}
+
+/// <summary>
+/// Change the color of a pixel and any pixels around it of the same color.
+/// </summary>
+/// <param name="point">
+/// = starting point of the pixel to change color.
+/// </param>
+/// <param name="color">
+/// = { RED, GREEN, BLUE } color values.
+/// </param>
+void fill(float point[2], unsigned char color[3])
+{
+	if (point[0] < 0.0f || point[0] >= 1.0f || point[1] < 0.0f || point[1] >= 1.0f)
+	{
+		cerr << "ERROR: fill() point must be between 0 and 1." << endl;
+		return;
+	}
+
+	int x = (int)(point[0] * dimx + 0.5f);
+	int y = (int)((1.0f - point[1]) * dimy + 0.5f);
+	
+	unsigned char prev_color[] = { 
+		imageBuff[y][x][RED], 
+		imageBuff[y][x][GREEN], 
+		imageBuff[y][x][BLUE] 
+	};
+
+	drawPixelRaw(x, y, color);
+	fillHelper(x, y, color, prev_color);
+}
+
 int putPixel(int x, int y, int r, int g, int b)
 {
 	if (x < 0 || x >= dimx || y < 0 || y >= dimy)
 		return -1;
+	
 	liveBuff[x][y][RED] = r;
 	liveBuff[x][y][GREEN] = g;
 	liveBuff[x][y][BLUE] = b;
+	
 	return 0;
 }
 
