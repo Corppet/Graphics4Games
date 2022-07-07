@@ -34,3 +34,5 @@ g4gBuild
 
 imgui.ini
 imgui.ini
+/lib/assimp-5.2.4
+*.zip

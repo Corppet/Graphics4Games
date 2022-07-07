@@ -23,6 +23,7 @@
 
 #include "shader_s.h"
 #include "camera.h"
+#include "mesh.h"
 
 #pragma warning( disable : 26451 )
 #define STB_IMAGE_IMPLEMENTATION
