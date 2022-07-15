@@ -1971,7 +1971,7 @@ int main()
     }
 
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(false);
 
     // configure global opengl state
     // -----------------------------
@@ -1994,10 +1994,12 @@ int main()
 	
     // load models
     // -----------
-    Model ourModel((SRC_PATH + (std::string)"iso-room/Room #1.obj").c_str());
+    //Model ourModel((SRC_PATH + (std::string)"iso-room/Room #1.obj").c_str());
     // isometric room by cmirulcnas
 	// https://free3d.com/3d-model/low-poly-isometric-room-1-704614.html
-
+    
+    Model ourModel((SRC_PATH + (std::string)"backpack/backpack.obj").c_str());
+	
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float cubeVertices[] = {
@@ -2175,24 +2177,24 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // be sure to activate shader when setting uniforms/drawing objects
-        lightingShader.use();
-        lightingShader.setVec3("viewPos", camera.Position);
-        lightingShader.setFloat("material.shininess", 32.0f);
+        ourShader.use();
+        ourShader.setVec3("viewPos", camera.Position);
+        ourShader.setFloat("material.shininess", 32.0f);
 		
         // directional light
-        lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-        lightingShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-        lightingShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-        lightingShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+        ourShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        ourShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+        ourShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+        ourShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
         // point light 1
-        lightingShader.setVec3("pointLights[0].position", pointLightPositions[0]);
-        lightingShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-        lightingShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-        lightingShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-        lightingShader.setFloat("pointLights[0].constant", 1.0f);
-        lightingShader.setFloat("pointLights[0].linear", 0.09f);
-        lightingShader.setFloat("pointLights[0].quadratic", 0.032f);
-		
+        ourShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+        ourShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+        ourShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+        ourShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        ourShader.setFloat("pointLights[0].constant", 1.0f);
+        ourShader.setFloat("pointLights[0].linear", 0.09f);
+        ourShader.setFloat("pointLights[0].quadratic", 0.032f);
+				
         // don't forget to enable shader before setting uniforms
         ourShader.use();
 
@@ -2204,7 +2206,7 @@ int main()
 
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f)); // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
@@ -2214,16 +2216,16 @@ int main()
         lightCubeShader.setMat4("projection", projection);
         lightCubeShader.setMat4("view", view);
 
-        //// we now draw as many light bulbs as we have point lights.
-        //glBindVertexArray(lightCubeVAO);
-        //for (unsigned int i = 0; i < 1; i++)
-        //{
-        //    model = glm::mat4(1.0f);
-        //    model = glm::translate(model, sin((float)glfwGetTime()) * pointLightPositions[i]);
-        //    model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-        //    lightCubeShader.setMat4("model", model);
-        //    glDrawArrays(GL_TRIANGLES, 0, 36);
-        //}
+        // we now draw as many light bulbs as we have point lights.
+        glBindVertexArray(lightCubeVAO);
+        for (unsigned int i = 0; i < 1; i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, pointLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+            lightCubeShader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // draw skybox as last
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -2357,6 +2359,8 @@ unsigned int loadTexture(char const* path)
 // -------------------------------------------------------
 unsigned int loadCubemap(vector<std::string> faces)
 {
+    stbi_set_flip_vertically_on_load(false);
+
     unsigned int textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -2382,7 +2386,9 @@ unsigned int loadCubemap(vector<std::string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
+	
+    //stbi_set_flip_vertically_on_load(true);
+	
     return textureID;
 }
 
