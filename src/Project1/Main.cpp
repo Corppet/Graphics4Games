@@ -1977,18 +1977,20 @@ int main()
     // build and compile shaders
     // -------------------------
 	// model shader
-    Shader ourShader((SRC_PATH + (std::string)"model_loading.vert").c_str(),
-        (SRC_PATH + (std::string)"model_loading.frag").c_str());
+    Shader ourShader((SRC_PATH2 + (std::string)"model_loading.vert").c_str(),
+        (SRC_PATH2 + (std::string)"model_loading.frag").c_str());
 
 	// lighting shaders
-    Shader lightingShader((SRC_PATH + (std::string)"light_cast.vert").c_str(),
-        (SRC_PATH + (std::string)"light_cast.frag").c_str());
-    Shader lightCubeShader((SRC_PATH + (std::string)"lighting.vert").c_str(),
-        (SRC_PATH + (std::string)"lighting2.frag").c_str());
+    Shader lightingShader((SRC_PATH2 + (std::string)"light_cast.vert").c_str(),
+        (SRC_PATH2 + (std::string)"light_cast.frag").c_str());
+    Shader lightCubeShader((SRC_PATH2 + (std::string)"lighting.vert").c_str(),
+        (SRC_PATH2 + (std::string)"lighting2.frag").c_str());
 
     // load models
     // -----------
-    Model ourModel((SRC_PATH + (std::string)"handgun/Handgun_obj.obj").c_str());
+    Model ourModel((SRC_PATH2 + (std::string)"iso-room/Room #1.obj").c_str());
+    // isometric room by cmirulcnas
+	// https://free3d.com/3d-model/low-poly-isometric-room-1-704614.html
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -2135,16 +2137,16 @@ int main()
         lightCubeShader.setMat4("projection", projection);
         lightCubeShader.setMat4("view", view);
 
-        // we now draw as many light bulbs as we have point lights.
-        glBindVertexArray(lightCubeVAO);
-        for (unsigned int i = 0; i < 1; i++)
-        {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, sin((float)glfwGetTime()) * pointLightPositions[i]);
-            model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-            lightCubeShader.setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        //// we now draw as many light bulbs as we have point lights.
+        //glBindVertexArray(lightCubeVAO);
+        //for (unsigned int i = 0; i < 1; i++)
+        //{
+        //    model = glm::mat4(1.0f);
+        //    model = glm::translate(model, sin((float)glfwGetTime()) * pointLightPositions[i]);
+        //    model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+        //    lightCubeShader.setMat4("model", model);
+        //    glDrawArrays(GL_TRIANGLES, 0, 36);
+        //}
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
