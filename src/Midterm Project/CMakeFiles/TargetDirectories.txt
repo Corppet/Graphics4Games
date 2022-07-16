@@ -1,0 +1,4 @@
+/mnt/c/Users/HOI3/source/repos/G4G_Basic/src/Project1/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/HOI3/source/repos/G4G_Basic/src/Project1/CMakeFiles/edit_cache.dir
+/mnt/c/Users/HOI3/source/repos/G4G_Basic/src/Project1/CMakeFiles/ALWAYS_COPY_DATA.dir
+/mnt/c/Users/HOI3/source/repos/G4G_Basic/src/Project1/CMakeFiles/g4g1.dir
