@@ -45,7 +45,8 @@
 //#define myCube
 //#define learnLighting
 //#define learnLightCast
-#define learnModelLoading
+//#define learnModelLoading
+#define learnShadowMapping
 
 #define SRC_PATH "C:/Users/HOI3/source/repos/G4G_Basic/src/Project1/"
 #define SRC_PATH2 "C:/Users/Corppet/source/repos/G4G_Build/src/Project1/"
@@ -2636,9 +2637,12 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader shader("3.1.3.shadow_mapping.vs", "3.1.3.shadow_mapping.fs");
-    Shader simpleDepthShader("3.1.3.shadow_mapping_depth.vs", "3.1.3.shadow_mapping_depth.fs");
-    Shader debugDepthQuad("3.1.3.debug_quad.vs", "3.1.3.debug_quad_depth.fs");
+    Shader shader((SRC_PATH2 + (std::string)"shadow_mapping.vert").c_str(), 
+        (SRC_PATH2 + (std::string)"shadow_mapping.frag").c_str());
+    Shader simpleDepthShader((SRC_PATH2 + (std::string)"shadow_mapping_depth.vert").c_str(), 
+        (SRC_PATH2 + (std::string)"shadow_mapping_depth.frag").c_str());
+    Shader debugDepthQuad((SRC_PATH2 + (std::string)"debug_quad_depth.vert").c_str(), 
+        (SRC_PATH2 + (std::string)"debug_quad_depth.frag").c_str());
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -2669,7 +2673,7 @@ int main()
 
     // load textures
     // -------------
-    unsigned int woodTexture = loadTexture((SRC_PATH + (std::string)"wood_floor.png").c_str());
+    unsigned int woodTexture = loadTexture((SRC_PATH2 + (std::string)"wood_floor.png").c_str());
 
     // configure depth map FBO
     // -----------------------
