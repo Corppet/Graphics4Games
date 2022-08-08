@@ -12,7 +12,6 @@ out VS_OUT
     vec2 TexCoords;
     vec4 FragPosLightSpace;
 } vs_out;
-out vec4 EyeSpacePos;
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -26,7 +25,4 @@ void main()
     vs_out.TexCoords = aTexCoords;
     vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
     gl_Position = projection * view * model * vec4(aPos, 1.0);
-
-    // calculate EyeSpacePos
-	EyeSpacePos = view * model * vec4(aPos, 1.0);
 }

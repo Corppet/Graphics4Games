@@ -2,6 +2,7 @@
 layout (location = 0) in vec3 aPos;
 
 out vec3 TexCoords;
+out vec4 EyeSpacePos;
 
 uniform mat4 projection;
 uniform mat4 view;

@@ -1,7 +1,8 @@
 #version 330 core
 out vec4 FragColor;
 
-in VS_OUT {
+in VS_OUT 
+{
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
@@ -13,6 +14,25 @@ uniform sampler2D shadowMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+
+// fog
+struct Fog
+{
+    vec3 color;
+
+	// linear
+	float near;
+	float far;
+
+	// exponential
+	float density;
+
+	int equation; // 0 = linear, 1 = exponential
+    bool enabled;
+};
+
+in vec4 EyeSpacePos;
+uniform Fog fog;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -50,6 +70,23 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     return shadow;
 }
 
+float getFogFactor(Fog params, float fogCoordinate)
+{
+	float result = 0.0;
+	if(params.equation == 0)
+	{
+		float fogLength = params.near - params.far;
+		result = (params.far - fogCoordinate) / fogLength;
+	}
+	else if(params.equation == 1) 
+    {
+		result = exp(-pow(params.density * fogCoordinate, 2.0));
+	}
+	
+	result = 1.0 - clamp(result, 0.0, 1.0);
+	return result;
+}
+
 void main()
 {           
     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
@@ -73,4 +110,11 @@ void main()
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
     
     FragColor = vec4(lighting, 1.0);
+
+	// Apply fog calculation only if fog is enabled
+    if(fog.enabled)
+    {
+      float fogCoordinate = abs(EyeSpacePos.z / EyeSpacePos.w);
+      FragColor = mix(FragColor, vec4(fog.color, 1.0), getFogFactor(fog, fogCoordinate));
+    }
 }
