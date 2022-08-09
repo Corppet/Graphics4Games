@@ -68,7 +68,7 @@ void renderScene(const Shader& shader);
 void renderCube();
 void renderQuad();
 
-void setFog(Shader& shader, bool enabled);
+void setFog(Shader& shader);
 
 void drawIMGUI();
 
@@ -90,6 +90,14 @@ float lastFrame = 0.0f;
 
 // meshes
 unsigned int planeVAO;
+
+// fog
+float fogColor[3] = {0.5f, 0.5f, 0.5f};
+float fogNear = 0.1f;
+float fogFar = 100.0f;
+float fogDensity = 0.05f;
+int fogEquation = 1;
+bool enableFog = true;
 
 int main()
 {
@@ -391,25 +399,20 @@ int main()
     // --------------------
     lightingShader.use();
     lightingShader.setInt("material.diffuse", 0);
-    setFog(lightingShader, true);
 
     planeShader.use();
     planeShader.setInt("diffuseTexture", 0);
     planeShader.setInt("shadowMap", 1);
-    setFog(planeShader, true);
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
-    setFog(skyboxShader, true);
 
     ourShader.use();
-    setFog(ourShader, true);
     
     lightCubeShader.use();
-    setFog(lightCubeShader, true);
 	
 	
     // Setup Dear ImGui context
@@ -501,6 +504,7 @@ int main()
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
+        setFog(ourShader);
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 
@@ -517,6 +521,7 @@ int main()
         ourModel.Draw(ourShader);
 
         lightingShader.use();
+        setFog(lightingShader);
 		
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.setVec3("viewPos", camera.Position);
@@ -613,6 +618,7 @@ int main()
 		
         // also draw the lamp object(s)
         lightCubeShader.use();
+        setFog(lightCubeShader);
         lightCubeShader.setMat4("projection", projection);
         lightCubeShader.setMat4("view", view);
 
@@ -630,6 +636,7 @@ int main()
         // 2. render scene as normal using the generated depth/shadow map  
         // --------------------------------------------------------------
         planeShader.use();
+        setFog(planeShader);
         planeShader.setMat4("projection", projection);
         planeShader.setMat4("view", view);
         // set light uniforms
@@ -651,6 +658,7 @@ int main()
         // draw skybox as last
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
         skyboxShader.use();
+        setFog(skyboxShader);
         view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
@@ -670,6 +678,10 @@ int main()
         glfwPollEvents();
     }
 
+    ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+	
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &cubeVAO);
@@ -950,15 +962,15 @@ void renderQuad()
     glBindVertexArray(0);
 }
 
-void setFog(Shader& shader, bool enabled)
+void setFog(Shader& shader)
 {
-    shader.setVec3("fog.color", 0.5f, 0.5f, 0.5f);
-    shader.setFloat("fog.near", 1.0f);
-    shader.setFloat("fog.far", 50.0f);
-    shader.setFloat("fog.density", 0.05f);
+    shader.setVec3("fog.color", fogColor[0], fogColor[1], fogColor[2]);
+    shader.setFloat("fog.near", fogNear);
+    shader.setFloat("fog.far", fogFar);
+    shader.setFloat("fog.density", fogDensity);
 
-    shader.setInt("fog.equation", 1);
-    shader.setBool("fog.enabled", enabled);
+    shader.setInt("fog.equation", fogEquation);
+    shader.setBool("fog.enabled", enableFog);
 }
 
 void drawIMGUI() {
@@ -976,7 +988,12 @@ void drawIMGUI() {
             1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::Text("\'Q\' to toggle between camera and cursor mode.\n"
             "Enjoy the isometric room in zero gravity!");
-        ImGui::Button("A Pointless Button");
+        ImGui::Checkbox("Enable Fog", &enableFog);
+        ImGui::ColorEdit3("Fog Color", fogColor);
+        ImGui::SliderFloat("Linear Near", &fogNear, 0.0f, 50.0f);
+		ImGui::SliderFloat("Linear Far", &fogFar, 50.0f, 100.0f);
+		ImGui::SliderFloat("Exp Density", &fogDensity, 0.0f, 0.1f);
+        ImGui::SliderInt("Equation", &fogEquation, 0, 1);
         
         ImGui::End();
 
