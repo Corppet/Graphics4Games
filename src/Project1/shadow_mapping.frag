@@ -104,7 +104,7 @@ void main()
     float spec = 0.0;
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-    vec3 specular = spec * lightColor;    
+    vec3 specular = spec * lightColor;
     // calculate shadow
     float shadow = ShadowCalculation(fs_in.FragPosLightSpace);                      
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
@@ -114,7 +114,7 @@ void main()
 	// Apply fog calculation only if fog is enabled
     if(fog.enabled)
     {
-      float fogCoordinate = abs(EyeSpacePos.z / EyeSpacePos.w);
-      FragColor = mix(FragColor, vec4(fog.color, 1.0), getFogFactor(fog, fogCoordinate));
+        float fogCoordinate = abs(EyeSpacePos.z / EyeSpacePos.w);
+        FragColor = mix(FragColor, vec4(fog.color, 1.0), getFogFactor(fog, fogCoordinate));
     }
 }

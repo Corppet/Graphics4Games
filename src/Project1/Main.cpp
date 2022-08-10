@@ -114,7 +114,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "G4G Midterm Project", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "G4G Final Project", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -411,9 +411,8 @@ int main()
     skyboxShader.setInt("skybox", 0);
 
     ourShader.use();
-    
-    lightCubeShader.use();
-	
+    ourShader.setInt("shadowMap", 1);
+    	
 	
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -497,6 +496,14 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+        // render the loaded model
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+        simpleDepthShader.setMat4("model", model);
+        ourModel.Draw(simpleDepthShader);
+
+		
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
@@ -512,9 +519,12 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
+        ourShader.setVec3("viewPos", camera.Position);
+        ourShader.setVec3("lightPos", lightPos);
+        ourShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
         // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
         ourShader.setMat4("model", model);
@@ -624,7 +634,7 @@ int main()
 
         // we now draw as many light bulbs as we have point lights.
         glBindVertexArray(lightCubeVAO);
-        for (unsigned int i = 0; i < pointLightPositions.size(); i++)
+        for (unsigned int i = 0; i < 0; i++)
         {
             model = glm::mat4(1.0f);
             model = glm::translate(model, sin((float)glfwGetTime()) * pointLightPositions[i]);
