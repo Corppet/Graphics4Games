@@ -49,8 +49,8 @@
 //#define learnShadowMapping
 //#define MidtermProject
 
-#define SRC_PATH "C:/Users/HOI3/source/repos/G4G_Basic/src/Project1/"
-#define SRC_PATH2 "C:/Users/Corppet/source/repos/G4G_Build/src/Project1/"
+#define SRC_PATH2 "C:/Users/HOI3/source/repos/G4G_Basic/src/Project1/"
+#define SRC_PATH "C:/Users/Corppet/source/repos/G4G_Build/src/Project1/"
 
 using namespace std;
 
@@ -66,6 +66,8 @@ unsigned int loadCubemap(vector<std::string> faces);
 
 void renderScene(const Shader& shader);
 void renderCube();
+void renderCubes(unsigned int cubeVAO, std::vector<glm::vec3>& cubePositions, Shader& shader);
+void renderModel(Model& custom_model, Shader& shader);
 void renderQuad();
 
 void setFog(Shader& shader);
@@ -404,9 +406,6 @@ int main()
     planeShader.setInt("diffuseTexture", 0);
     planeShader.setInt("shadowMap", 1);
 
-    // draw in wireframe
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
@@ -448,14 +447,11 @@ int main()
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // 1. render depth of scene to texture (from light's perspective)
+        // render depth of scene to texture (from light's perspective)
         // --------------------------------------------------------------
         glm::mat4 lightProjection, lightView;
         glm::mat4 lightSpaceMatrix;
         float near_plane = 1.0f, far_plane = 70.5f;
-        //lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); 
-        // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't 
-        // enough to reflect the whole scene
         lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
         lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
         lightSpaceMatrix = lightProjection * lightView;
@@ -469,40 +465,9 @@ int main()
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, woodTexture);
        
-        // render cubes
-        glBindVertexArray(cubeVAO);
-        for (unsigned int i = 0; i < cubePositions.size(); i++)
-        {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model = glm::mat4(1.0f);
-            if (i % 2 == 0)
-                model = glm::translate(model, cubePositions[i] + glm::vec3(0.0f, 0.0f, 2.5f)
-                    + glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
-                        cosf(glfwGetTime() * (float)i / cubePositions.size()),
-                        sinf(glfwGetTime() * (float)i / cubePositions.size())));
-            else
-                model = glm::translate(model, cubePositions[i] + glm::vec3(0.0f, 0.0f, 2.5f)
-                    - glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
-                        cosf(glfwGetTime() * (float)i / cubePositions.size()),
-                        sinf(glfwGetTime() * (float)i / cubePositions.size())));
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle),
-                glm::vec3(1.0f, 0.3f, 0.5f) * glm::vec3(i)
-                + glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
-                    cosf(glfwGetTime() * (float)i / cubePositions.size()),
-                    sinf(glfwGetTime() * (float)i / cubePositions.size())));
-            simpleDepthShader.setMat4("model", model);
+        renderCubes(cubeVAO, cubePositions, simpleDepthShader);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-        simpleDepthShader.setMat4("model", model);
-        ourModel.Draw(simpleDepthShader);
-
+        renderModel(ourModel, simpleDepthShader);
 		
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -523,12 +488,7 @@ int main()
         ourShader.setVec3("lightPos", lightPos);
         ourShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
-        // render the loaded model
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-        ourShader.setMat4("model", model);
-        ourModel.Draw(ourShader);
+        renderModel(ourModel, ourShader);
 
         lightingShader.use();
         setFog(lightingShader);
@@ -587,7 +547,7 @@ int main()
         lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
         // world transformation
-        model = glm::mat4(1.0f);
+        glm::mat4 model = glm::mat4(1.0f);
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat4("view", view);
         lightingShader.setMat4("model", model);
@@ -599,32 +559,7 @@ int main()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specularMap);
 		
-        // render cubes
-        glBindVertexArray(cubeVAO);
-        for (unsigned int i = 0; i < cubePositions.size(); i++)
-        {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model = glm::mat4(1.0f);
-			if (i % 2 == 0)
-                model = glm::translate(model, cubePositions[i] + glm::vec3(0.0f, 0.0f, 2.5f)
-                    + glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()), 
-                        cosf(glfwGetTime() * (float)i / cubePositions.size()), 
-                        sinf(glfwGetTime() * (float)i / cubePositions.size())));
-            else
-                model = glm::translate(model, cubePositions[i] + glm::vec3(0.0f, 0.0f, 2.5f)
-                    - glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
-                        cosf(glfwGetTime() * (float)i / cubePositions.size()),
-                        sinf(glfwGetTime() * (float)i / cubePositions.size())));
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle),
-                glm::vec3(1.0f, 0.3f, 0.5f) * glm::vec3(i)
-                + glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
-                    cosf(glfwGetTime() * (float)i / cubePositions.size()),
-                    sinf(glfwGetTime() * (float)i / cubePositions.size())));
-            lightingShader.setMat4("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        renderCubes(cubeVAO, cubePositions, lightingShader);
 		
         // also draw the lamp object(s)
         lightCubeShader.use();
@@ -666,10 +601,10 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // draw skybox as last
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        glDepthFunc(GL_LEQUAL);
         skyboxShader.use();
         setFog(skyboxShader);
-        view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
         // skybox cube
@@ -983,7 +918,52 @@ void setFog(Shader& shader)
     shader.setBool("fog.enabled", enableFog);
 }
 
-void drawIMGUI() {
+void renderCubes(unsigned int cubeVAO, std::vector<glm::vec3>& cubePositions, Shader& shader)
+{
+    glBindVertexArray(cubeVAO);
+    for (unsigned int i = 0; i < cubePositions.size(); i++)
+    {
+        // calculate the model matrix for each object and pass it to shader before drawing
+        glm::mat4 model = glm::mat4(1.0f);
+
+		// translation
+        if (i % 2 == 0)
+            model = glm::translate(model, cubePositions[i] + glm::vec3(0.0f, 0.0f, 2.5f)
+                + glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
+                    cosf(glfwGetTime() * (float)i / cubePositions.size()),
+                    sinf(glfwGetTime() * (float)i / cubePositions.size())));
+        else
+            model = glm::translate(model, cubePositions[i] + glm::vec3(0.0f, 0.0f, 2.5f)
+                - glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
+                    cosf(glfwGetTime() * (float)i / cubePositions.size()),
+                    sinf(glfwGetTime() * (float)i / cubePositions.size())));
+
+		// rotation
+        float angle = 20.0f * i;
+        model = glm::rotate(model, glm::radians(angle),
+            glm::vec3(1.0f, 0.3f, 0.5f) * glm::vec3(i)
+            + glm::vec3(sinf(glfwGetTime() * (float)i / cubePositions.size()),
+                cosf(glfwGetTime() * (float)i / cubePositions.size()),
+                sinf(glfwGetTime() * (float)i / cubePositions.size())));
+		
+        shader.setMat4("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+}
+
+void renderModel(Model& custom_model, Shader& shader)
+{
+    // render the loaded model
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+    shader.setMat4("model", model);
+    custom_model.Draw(shader);
+}
+
+void drawIMGUI() 
+{
     // Show a simple window that we create ourselves. We use a Begin/End pair to 
     // create a named window.
     {
