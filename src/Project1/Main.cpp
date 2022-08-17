@@ -49,8 +49,8 @@
 //#define learnShadowMapping
 //#define MidtermProject
 
-#define SRC_PATH2 "C:/Users/HOI3/source/repos/G4G_Basic/src/Project1/"
-#define SRC_PATH "C:/Users/Corppet/source/repos/G4G_Build/src/Project1/"
+#define SRC_PATH "C:/Users/HOI3/source/repos/G4G_Basic/src/Project1/"
+#define SRC_PATH2 "C:/Users/Corppet/source/repos/G4G_Build/src/Project1/"
 
 using namespace std;
 

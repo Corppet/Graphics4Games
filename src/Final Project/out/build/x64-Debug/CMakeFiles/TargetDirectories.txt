@@ -1,0 +1,4 @@
+C:/Users/Corppet/source/repos/G4G_Build/src/Project1/out/build/x64-Debug/CMakeFiles/g4g1.dir
+C:/Users/Corppet/source/repos/G4G_Build/src/Project1/out/build/x64-Debug/CMakeFiles/ALWAYS_COPY_DATA.dir
+C:/Users/Corppet/source/repos/G4G_Build/src/Project1/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/Corppet/source/repos/G4G_Build/src/Project1/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
